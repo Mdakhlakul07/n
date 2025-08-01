@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Configuration - Vangariwala</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .setup-container {
+      background: white;
+      padding: 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      color: #FF8C00;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .step {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border: 2px solid #f0f0f0;
+      border-radius: 0.5rem;
+    }
+    .step h2 {
+      color: #333;
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #FF8C00;
+    }
+    .btn {
+      background: #FF8C00;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .btn:hover {
+      background: #FFA500;
+    }
+    .code-block {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Monaco', 'Consolas', monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+    }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="setup-container">
+    <h1>🌱 Vangariwala Supabase Setup</h1>
+    
+    <div class="step">
+      <h2>📋 Step 1: Create Supabase Project</h2>
+      <p>1. Go to <a href="https://supabase.com" target="_blank">supabase.com</a> and create an account</p>
+      <p>2. Create a new project</p>
+      <p>3. Wait for the project to be ready</p>
+    </div>
+
+    <div class="step">
+      <h2>🔑 Step 2: Get Your API Keys</h2>
+      <p>1. Go to Settings → API in your Supabase project</p>
+      <p>2. Copy your Project URL and anon public key</p>
+      
+      <div class="form-group">
+        <label for="supabase-url">Project URL:</label>
+        <input type="url" id="supabase-url" placeholder="https://your-project-ref.supabase.co">
+      </div>
+      
+      <div class="form-group">
+        <label for="supabase-key">Anon Public Key:</label>
+        <textarea id="supabase-key" rows="4" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      </div>
+      
+      <button class="btn" onclick="generateConfig()">Generate Configuration</button>
+    </div>
+
+    <div class="step hidden" id="config-step">
+      <h2>⚙️ Step 3: Update Configuration</h2>
+      <p>Replace the SUPABASE configuration in your <code>js/config.js</code> file with:</p>
+      <div class="code-block" id="generated-config"></div>
+      <button class="btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </div>
+
+    <div class="step">
+      <h2>📧 Step 4: Configure Email Authentication</h2>
+      <p>1. Go to Authentication → Settings in your Supabase project</p>
+      <p>2. Under "Auth Providers", make sure Email is enabled</p>
+      <p>3. Configure Site URL to: <code id="site-url">http://localhost:8000</code></p>
+      <p>4. Add redirect URLs:</p>
+      <div class="code-block">http://localhost:8000
+http://localhost:8000/?verified=true
+http://localhost:8000/?reset=true</div>
+    </div>
+
+    <div class="step">
+      <h2>✅ Step 5: Test Your Setup</h2>
+      <p>1. Save the updated config.js file</p>
+      <p>2. Reload your Vangariwala app</p>
+      <p>3. Try signing up with a real email address</p>
+      <p>4. Check your email for the verification link</p>
+      
+      <div class="warning">
+        <strong>Note:</strong> Make sure to update the redirect URLs when you deploy to production!
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set current site URL
+    document.getElementById('site-url').textContent = window.location.origin;
+
+    function generateConfig() {
+      const url = document.getElementById('supabase-url').value.trim();
+      const key = document.getElementById('supabase-key').value.trim();
+      
+      if (!url || !key) {
+        alert('Please enter both Project URL and Anon Public Key');
+        return;
+      }
+      
+      const config = `  SUPABASE: {
+    URL: '${url}',
+    ANON_KEY: '${key}'
+  },`;
+      
+      document.getElementById('generated-config').textContent = config;
+      document.getElementById('config-step').classList.remove('hidden');
+    }
+    
+    function copyToClipboard() {
+      const configText = document.getElementById('generated-config').textContent;
+      navigator.clipboard.writeText(configText).then(() => {
+        alert('Configuration copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy. Please select and copy manually.');
+      });
+    }
+  </script>
+</body>
+</html>
